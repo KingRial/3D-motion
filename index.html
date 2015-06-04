@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>3D-Motion</title>
+	<script src="./libs/jquery-2.1.1.js"></script>
+	<script src="./libs/THREE.js"></script>
+	<script src="./libs/THREE.ColladaLoader_rev68.js"></script>
+	<script src="./libs/THREE.OrbitControls.js"></script>
+	<script src="./libs/THREE.CSS3DRenderer.js"></script>
+	<script src="./libs/leap-0.6.2.js"></script>
+	<script src="./libs/leap-plugins-0.1.7.js"></script>
+	<script>
+		$(document).ready( function(){
+			//HTML div
+			$( 'body' ).append( $('<div>',{
+				id: '3dview',
+				style: 'position: relative; width: 100%; height:500px;'
+			}) );
+			//Renderers
+			var _oRendererWebGL = new THREE.WebGLRenderer(); //WebGL renderer
+			_oRendererWebGL.setClearColor( new THREE.Color(0xEEEEEE, 1.0) );
+			_oRendererWebGL.setSize( $( '#3dview' ).width(), $( '#3dview' ).height() );
+			var _oRendererCSS	= new THREE.CSS3DRenderer(); //CSS renderer
+			_oRendererCSS.setSize( $( '#3dview' ).width(), $( '#3dview' ).height() );
+			//Adding renderers to document
+			$( '#3dview' ).append( _oRendererWebGL.domElement );
+			$( '#3dview' ).append( _oRendererCSS.domElement );
+			$( '#3dview' ).children().css({
+				position: 'absolute'
+			});
+			//Scenes
+			var _oSceneWebGL = new THREE.Scene(); //WebGL Scene
+			var _oSceneCSS = new THREE.Scene(); //CSS Scene
+			//Camera ( using the same camera on both scenes )
+			var _oCamera = new THREE.PerspectiveCamera(45, $( '#3dview' ).width() / $( '#3dview' ).height(), 0.1, 1000);
+			_oCamera.position.set( 0, 0, 30 );
+			var _oControls = new THREE.OrbitControls( _oCamera ); //Orbits Camera Controls
+			//Lights WebGL
+			var _oLightAmbient = new THREE.AmbientLight( 0x0c0c0c );
+			_oSceneWebGL.add( _oLightAmbient );
+			var _oLightSpot = new THREE.SpotLight( 0xffffff );
+			_oLightSpot.position.set( 0, 20, 40 ); //From behind camera
+			_oSceneWebGL.add( _oLightSpot );
+			var _oLightSpot2 = new THREE.SpotLight( 0xffffff );
+			_oLightSpot2.position.set( 0, -20, -40 ); //From behind camera
+			_oSceneWebGL.add( _oLightSpot2 );
+			//Model WebGL
+			var _oThreeObj = null;
+			var _oLoader = new THREE.ColladaLoader();
+			_oLoader.load('datas/Marriott.dae', function( oResult ){
+				_oThreeObj = oResult.scene;
+				//_oThreeObj.position.set( 0, 0, 0 );
+				_oThreeObj.position.set( -4, -2, 0 );
+				//_oThreeObj.applyMatrix( new THREE.Matrix4().makeTranslation( -4, -2, 0 ) );
+				_oSceneWebGL.add( _oThreeObj );
+			});
+			//Lights CSS ( cannot use the same lights )
+			var _oLightAmbientCSS = new THREE.AmbientLight( 0x0c0c0c );
+			_oSceneCSS.add( _oLightAmbientCSS );
+			var _oLightSpotCSS = new THREE.SpotLight( 0xffffff );
+			_oLightSpotCSS.position.set( 0, 20, 40 ); //From behind camera
+			_oSceneCSS.add( _oLightSpotCSS );
+			var _oLightSpotCSS2 = new THREE.SpotLight( 0xffffff );
+			_oLightSpotCSS2.position.set( 0, -20, -40 ); //From behind camera
+			_oSceneCSS.add( _oLightSpotCSS2 );
+			//Adding CSS3D object
+			var _jImage = $('<img>',{
+				id: 'Light 1',
+				src: './datas/icon-light-on.png'
+			})
+				.click(function(){ $('label#lastLight').text( $(this).prop('id') ); })
+			;
+			var _oObjectCSS = new THREE.CSS3DObject( _jImage.get( 0 ) );
+			_oObjectCSS.scale.divideScalar( 200 );
+			_oObjectCSS.position.set( 0, 0, 3 );
+			_oSceneCSS.add( _oObjectCSS );
+			var _jImage2 = $('<img>',{
+				id: 'Light 2',
+				src: './datas/icon-light-off.png'
+			})
+				.click(function(){ $('label#lastLight').text( $(this).prop('id') ); })
+			;
+			var _oObjectCSS2 = new THREE.CSS3DObject( _jImage2.get( 0 ) );
+			_oObjectCSS2.scale.divideScalar( 200 );
+			_oObjectCSS2.position.set( -3, 0, 3 );
+			_oSceneCSS.add( _oObjectCSS2 );
+			var _jImage3 = $('<img>',{
+				id: 'Light 3',
+				src: './datas/icon-light-off.png'
+			})
+				.click(function(){ $('label#lastLight').text( $(this).prop('id') ); })
+			;
+			var _oObjectCSS3 = new THREE.CSS3DObject( _jImage3.get( 0 ) );
+			_oObjectCSS3.scale.divideScalar( 200 );
+			_oObjectCSS3.position.set( 0, 3, 3 );
+			_oSceneCSS.add( _oObjectCSS3 );
+			setInterval(  function changeColour(){
+				if( parseInt( Math.random()*100 )%2 == 0 ){
+					var _sPath = _jImage.prop('src');
+					_jImage.prop('src', ( _sPath.indexOf('off')!=-1 ? './datas/icon-light-on.png' : './datas/icon-light-off.png' ) );
+				}
+				if( parseInt( Math.random()*100 )%2 == 0 ){
+					var _sPath = _jImage2.prop('src');
+					_jImage2.prop('src', ( _sPath.indexOf('off')!=-1 ? './datas/icon-light-on.png' : './datas/icon-light-off.png' ) );
+				}
+				if( parseInt( Math.random()*100 )%2 == 0 ){
+					var _sPath = _jImage3.prop('src');
+					_jImage3.prop('src', ( _sPath.indexOf('off')!=-1 ? './datas/icon-light-on.png' : './datas/icon-light-off.png' ) );
+				}
+			}, 5000 );
+			//Rendering WebGL
+			function _renderWebGL(){
+				_oRendererWebGL.render( _oSceneWebGL, _oCamera );
+				requestAnimationFrame( _renderWebGL );
+			}
+			_renderWebGL();
+			//Rendering CSS
+			function _renderCSS(){
+				_oObjectCSS.lookAt( _oCamera.position );
+				_oObjectCSS2.lookAt( _oCamera.position );
+				_oObjectCSS3.lookAt( _oCamera.position );
+				_oObjectCSS.rotation.x += 0.03;
+				_oRendererCSS.render( _oSceneCSS, _oCamera );
+				requestAnimationFrame( _renderCSS );
+			}
+			_renderCSS();
+			//Leap Motion
+			var _oLeapController = Leap.loop( {
+				enableGestures: true
+			}, function( oFrame ) {
+				//Checking the presence for gestures
+				for( var _iIndex in oFrame.gestures ){
+					//SEE: https://developer.leapmotion.com/leapjs/tutorials/gestures
+					var _oGesture = oFrame.gestures[ _iIndex ];
+					$('label#lastGesture').text( _oGesture.type + ' [ Timestamp: ' + oFrame.timestamp + ( _oGesture.position ? ' Position: ' + _oGesture.position[ 0 ] + ', ' + _oGesture.position[ 1 ] + ', ' + _oGesture.position[ 2 ] : '' ) + ' ]' );
+				}
+				oFrame.hands.forEach( function( oHand, iIndex ){
+					if( oHand.type!='right'){ return; }//Ignoring left Hand
+					//SEE coordinates: https://developer.leapmotion.com/documentation/javascript/devguide/Leap_Overview.html
+					if( oHand.direction[1] > 0.5 ){ //Vertical Palm found
+						var _aHandScreenPositions = oHand.screenPosition();
+						var _vHandScreenPositions = new THREE.Vector3( _aHandScreenPositions[ 0 ], _aHandScreenPositions[ 1 ], _aHandScreenPositions[ 2 ] )
+							.multiplyScalar( -1 ) //Changing references with the window ones
+							//.multiply( new THREE.Vector3( 0.001, 0.001, 1 ) ) //Scaling values
+							.sub( new THREE.Vector3( 0, 0, -20 ) ) //Translating for camera
+						;
+						_oCamera.position.set( _vHandScreenPositions.x, _vHandScreenPositions.y, _vHandScreenPositions.z );
+					}
+				});
+			}).use('screenPosition', {
+				//scale: 0.25,
+				positioning: function(aPositions){
+					Leap.vec3.subtract( aPositions, aPositions, this.frame.interactionBox.center );
+					Leap.vec3.divide( aPositions, aPositions, this.frame.interactionBox.size );
+					Leap.vec3.multiply( aPositions, aPositions, [ $( '#3dview' ).width(), $( '#3dview' ).height(), 1 ] );
+					aPositions = Leap.vec3.multiply( aPositions, aPositions, [ 0.005, 0.05, 10 ] );
+					return aPositions;
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<h1>3D-Motion</h1>
+	<div><label>Last Gesture: </label><label id="lastGesture" >None</label></div>
+	<div><label>Last Light Clicked: </label><label id="lastLight" >None</label></div>
+</body>
+</html>
