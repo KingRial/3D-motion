@@ -2,7 +2,9 @@
 ==================================================
 
 3D-motion is an experimental study to see if a 3D background could be used inside a home automation supervisor built with a web UI.
-The purpose of this experiment was to see 3D components ( the background ) living together with plain HTML components ( the lights which, sometimes, change color ).
+
+The purpose of this experiment is to see 3D components ( the background ) living together with plain HTML components ( the lights which, sometimes, change color ).
+
 The navigation can be made using a mouse or [Leap Motion]( https://www.leapmotion.com/ ).
 
 With the advent of virtual and enhanced reality, this demo could became a nice piece of code to play with and fuel new ideas.
